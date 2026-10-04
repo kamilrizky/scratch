@@ -1,0 +1,941 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Editor Blok</title>
+<style>
+*{box-sizing:border-box}
+html,body{height:100%;margin:0;font-family:system-ui,Segoe UI,Roboto,sans-serif;background:#0d1117;color:#e6edf3}
+#top{height:56px;display:flex;align-items:center;gap:10px;padding:0 14px;background:#121826;border-bottom:1px solid rgba(255,255,255,0.08);color:#fff}
+.brand{display:flex;align-items:center;gap:9px;font-weight:800;font-size:15px;white-space:nowrap}
+.brand i{display:grid;place-items:center;width:32px;height:32px;border-radius:10px;background:#ff8c1a;font-style:normal;font-size:18px;box-shadow:0 0 12px rgba(255,140,26,0.4)}
+#title{height:34px;width:210px;padding:0 12px;border:1px solid rgba(255,255,255,0.15);border-radius:10px;background:rgba(255,255,255,0.05);color:#fff;font:600 14px system-ui;outline:0;transition:all .2s}
+#title:focus{border-color:#ff8c1a;background:rgba(255,255,255,0.1);box-shadow:0 0 10px rgba(255,140,26,0.3)}
+.grp{display:flex;gap:6px;padding-left:10px;border-left:1px solid rgba(255,255,255,0.12)}
+.btn{display:inline-flex;align-items:center;gap:7px;height:34px;padding:0 14px;border:0;border-radius:10px;font:600 13px system-ui;cursor:pointer;transition:all .2s;white-space:nowrap}
+.btn:active{transform:translateY(1px)}
+.btn svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.btn.ghost{background:rgba(255,255,255,0.06);color:#e8ebf5;border:1px solid rgba(255,255,255,0.08)}.btn.ghost:hover{background:rgba(255,255,255,0.15);border-color:rgba(255,255,255,0.2)}
+.btn.primary{background:#ff8c1a;color:#fff;box-shadow:0 0 12px rgba(255,140,26,0.4)}.btn.primary:hover{background:#ff9d3d;box-shadow:0 0 18px rgba(255,140,26,0.6)}
+.btn.accent{background:#4c97ff;color:#fff;box-shadow:0 0 12px rgba(76,151,255,0.4)}.btn.accent:hover{background:#6aaaff;box-shadow:0 0 18px rgba(76,151,255,0.6)}
+.btn.light{background:#21262d;color:#c9d1d9;border:1px solid rgba(255,255,255,0.1)}.btn.light:hover{background:#30363d;color:#fff}
+#status{font-size:13px;color:#7be0a6;margin-left:auto;white-space:nowrap;text-shadow:0 0 8px rgba(123,224,166,0.4)}
+#main{display:flex;height:calc(100% - 56px)}
+#blocklyDiv{flex:1;min-width:0;background:#0d1117}
+#side{width:40%;min-width:300px;max-width:500px;padding:12px;background:#121826;border-left:1px solid rgba(255,255,255,0.08);display:flex;flex-direction:column;gap:10px}
+
+/* ===== DESAIN KONTROL STAGE FUTURISTIK ===== */
+#ctl {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 14px;
+  background: rgba(18, 24, 38, 0.95);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+}
+
+.rb {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.04);
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  outline: none;
+}
+
+.rb svg {
+  width: 20px;
+  height: 20px;
+  z-index: 2;
+  transition: transform 0.2s ease, filter 0.2s ease;
+}
+
+#flag {
+  color: #00ffaa;
+  border-color: rgba(0, 255, 170, 0.25);
+  box-shadow: 0 0 10px rgba(0, 255, 170, 0.1), inset 0 0 8px rgba(0, 255, 170, 0.05);
+}
+
+#flag:hover {
+  background: rgba(0, 255, 170, 0.12);
+  border-color: rgba(0, 255, 170, 0.6);
+  box-shadow: 0 0 20px rgba(0, 255, 170, 0.4), inset 0 0 12px rgba(0, 255, 170, 0.2);
+  transform: translateY(-1px);
+}
+
+#flag:hover svg {
+  filter: drop-shadow(0 0 6px #00ffaa);
+}
+
+#stop {
+  color: #ff3366;
+  border-color: rgba(255, 51, 102, 0.25);
+  box-shadow: 0 0 10px rgba(255, 51, 102, 0.1), inset 0 0 8px rgba(255, 51, 102, 0.05);
+}
+
+#stop:hover {
+  background: rgba(255, 51, 102, 0.12);
+  border-color: rgba(255, 51, 102, 0.6);
+  box-shadow: 0 0 20px rgba(255, 51, 102, 0.4), inset 0 0 12px rgba(255, 51, 102, 0.2);
+  transform: translateY(-1px);
+}
+
+#stop:hover svg {
+  filter: drop-shadow(0 0 6px #ff3366);
+}
+
+.rb:active {
+  transform: scale(0.93) !important;
+  box-shadow: none !important;
+}
+
+.tog {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font: 600 12px system-ui;
+  color: #a0aec0;
+  cursor: pointer;
+  user-select: none;
+  letter-spacing: 0.5px;
+}
+
+.sw {
+  position: relative;
+  width: 34px;
+  height: 18px;
+  border-radius: 99px;
+  background: rgba(255, 255, 255, 0.15);
+  transition: background 0.2s;
+}
+
+.sw::after {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #a0aec0;
+  transition: transform 0.2s, background 0.2s;
+}
+
+.tog input:checked + .sw {
+  background: rgba(255, 140, 26, 0.3);
+}
+
+.tog input:checked + .sw::after {
+  transform: translateX(16px);
+  background: #ff8c1a;
+  box-shadow: 0 0 8px #ff8c1a;
+}
+
+#stage{width:100%;height:auto;aspect-ratio:4/3;background:#fff;border:1px solid rgba(255,255,255,0.15);border-radius:12px;box-shadow:0 8px 20px rgba(0,0,0,0.4)}
+#info{font:12px ui-monospace,monospace;color:#8b949e;letter-spacing:0.5px}
+#msg{font-size:13px;color:#ff5566;min-height:18px}
+dialog{border:1px solid rgba(255,255,255,0.15);border-radius:16px;padding:20px;min-width:320px;background:#161b22;color:#e6edf3;box-shadow:0 12px 32px rgba(0,0,0,0.6)}
+.it{display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-top:1px solid rgba(255,255,255,0.08);cursor:pointer}
+
+/* ===== STYLING TOOLBOX ===== */
+.blocklyToolboxDiv {
+  background-color: #121826 !important;
+  border-right: 1px solid rgba(255, 255, 255, 0.08) !important;
+  padding: 8px 4px !important;
+}
+
+.blocklyTreeRow {
+  height: 36px !important;
+  line-height: 36px !important;
+  border-radius: 10px !important;
+  margin: 4px 6px !important;
+  padding: 0 10px !important;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  background: rgba(255, 255, 255, 0.02) !important;
+  border: 1px solid transparent !important;
+}
+
+.blocklyTreeLabel {
+  font-family: system-ui, -apple-system, sans-serif !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  color: #94a3b8 !important;
+  letter-spacing: 0.3px !important;
+  transition: color 0.2s ease, text-shadow 0.2s ease !important;
+}
+
+.blocklyTreeIcon {
+  border-radius: 6px !important;
+  opacity: 0.85 !important;
+  transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+}
+
+.blocklyTreeRow:hover {
+  background: rgba(255, 255, 255, 0.08) !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+  transform: translateX(2px) !important;
+}
+
+.blocklyTreeRow:hover .blocklyTreeLabel {
+  color: #ffffff !important;
+}
+
+.blocklyTreeSelected {
+  background: rgba(255, 255, 255, 0.12) !important;
+  border-color: rgba(255, 255, 255, 0.25) !important;
+  box-shadow: 0 0 12px rgba(255, 255, 255, 0.05) !important;
+}
+
+.blocklyTreeSelected .blocklyTreeLabel {
+  color: #ffffff !important;
+  text-shadow: 0 0 8px rgba(255, 255, 255, 0.5) !important;
+}
+
+.blocklyTreeSelected .blocklyTreeIcon {
+  transform: scale(1.1) !important;
+  box-shadow: 0 0 8px currentColor !important;
+}
+
+.blocklyFlyoutBackground {
+  fill: #161c2e !important;
+  fill-opacity: 0.95 !important;
+}
+
+.blocklyFlyout {
+  border-right: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+
+.blocklyScrollbarHandle {
+  fill: rgba(255, 255, 255, 0.15) !important;
+  rx: 4px !important;
+  ry: 4px !important;
+}
+
+.blocklyScrollbarHandle:hover {
+  fill: rgba(255, 255, 255, 0.3) !important;
+}
+
+@media(max-width:640px){#main{flex-direction:column}#blocklyDiv{min-height:320px}#side{width:100%;max-width:none;border:0}}
+</style>
+</head>
+<body>
+<div id="top">
+  <div class="brand"><i>🐱</i>Editor Blok</div>
+  <input type="text" id="title" value="Project tanpa judul" aria-label="Judul project">
+  <div class="grp">
+    <button class="btn ghost" onclick="newProj()"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Baru</button>
+    <button class="btn ghost" onclick="openDlg()"><svg viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>Buka</button>
+  </div>
+  <div class="grp">
+    <button class="btn primary" onclick="save()"><svg viewBox="0 0 24 24"><path d="M5 3h11l3 3v15H5z"/><path d="M8 3v5h7V3M8 21v-7h8v7"/></svg>Simpan</button>
+    <button class="btn accent" onclick="share()"><svg viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 10.5l6.8-4M8.6 13.5l6.8 4"/></svg>Bagikan</button>
+    <button class="btn ghost" onclick="download()" title="Unduh sebagai file"><svg viewBox="0 0 24 24"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg>Unduh</button>
+  </div>
+  <span id="status"></span>
+</div>
+<div id="main">
+  <div id="blocklyDiv"></div>
+  <div id="side">
+    <div id="ctl">
+      <button class="rb" id="flag" onclick="flag()" title="Mulai (bendera hijau)">
+        <svg viewBox="0 0 24 24"><path d="M5 22V3" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/><path d="M5 4h12l-2.5 4.5 2.5 4.5H5z" fill="currentColor"/></svg>
+      </button>
+      <button class="rb" id="stop" onclick="stopAll()" title="Berhenti">
+        <svg viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="2" fill="currentColor"/></svg>
+      </button>
+      <label class="tog" title="Jalankan loop lebih cepat"><input type="checkbox" id="turbo"><span class="sw"></span>TURBO</label>
+      <span id="info" style="margin-left:auto"></span>
+    </div>
+    <canvas id="stage" width="480" height="360"></canvas>
+    <div id="msg"></div>
+  </div>
+</div>
+<dialog id="dlg"><h3 style="margin-top:0">Buka project</h3><div id="plist"></div><button class="btn light" style="margin-top:12px" onclick="dlg.close()">Tutup</button></dialog>
+
+<script src="https://unpkg.com/blockly@10.4.3/blockly_compressed.js"></script>
+<script src="https://unpkg.com/blockly@10.4.3/blocks_compressed.js"></script>
+<script src="https://unpkg.com/blockly@10.4.3/javascript_compressed.js"></script>
+<script src="https://unpkg.com/blockly@10.4.3/msg/en.js"></script>
+<script>
+const $= id => document.getElementById(id), dlg =$('dlg');
+
+/* ================= Definisi blok ================= */
+const NUM = n => ({type:'input_value', name:n, check:'Number'});
+const BOOL = n => ({type:'input_value', name:n, check:'Boolean'});
+const ANY = n => ({type:'input_value', name:n});
+const FLD = (n, v) => ({type:'field_input', name:n, text:v});
+const DD = (n, o) => ({type:'field_dropdown', name:n, options:o});
+const KEYS = [['spasi',' '],['↑','ArrowUp'],['↓','ArrowDown'],['←','ArrowLeft'],['→','ArrowRight'],['a','a'],['d','d'],['w','w'],['s','s']];
+const EMOJI = ['🐱','🐶','🚀','⭐','🐸','🤖','🚗','🐟'].map(e => [e, e]);
+const BACKDROPS = [['backdrop1','backdrop1'],['backdrop2','backdrop2']];
+const TARGETS = [['random position','RANDOM'],['mouse-pointer','MOUSE']];
+const ROTATIONS = [['left-right','LEFT_RIGHT'],["don't rotate",'NONE'],['all around','ALL']];
+const EFFECTS = [['color','color'],['fisheye','fisheye'],['whirl','whirl'],['pixelate','pixelate'],['mosaic','mosaic'],['brightness','brightness'],['ghost','ghost']];
+const LAYERS = [['front','front'],['back','back']];
+const LAYER_DIR = [['forward','forward'],['backward','backward']];
+
+/* OPTION STOP & CLONE */
+const STOP_OPTIONS = [['all', 'ALL'], ['this script', 'THIS_SCRIPT'], ['other scripts in sprite', 'OTHER_SCRIPTS']];
+const CLONE_TARGETS = [['myself', 'MYSELF']];
+
+/* WARNA KATEGORI BLOK */
+const MO='#4c97ff', LK='#9966ff', SO='#cf63cf', PN='#0fbd8c', CT='#ffab19', SN='#5cb1d6', VR='#ff8c1a', CL='#e85d9b', EV='#ffbf00';
+const SOUNDS = [['Meow','Meow']];
+const SOUND_EFFECTS = [['pitch','pitch'],['pan','pan']];
+
+const kinds = {h:{nextStatement:null}, r:{output:null}, b:{output:'Boolean'}, e:{previousStatement:null}, s:{previousStatement:null, nextStatement:null}};
+const def = (type, message0, args0, colour, k = 's') => ({type, message0, args0, colour, ...kinds[k]});
+
+Blockly.defineBlocksWithJsonArray([
+  /* GERAK (MOTION) */
+  def('mv_move','move %1 steps',[NUM('STEPS')],MO),
+  def('mv_right','turn ↻ %1 degrees',[NUM('DEG')],MO),
+  def('mv_left','turn ↺ %1 degrees',[NUM('DEG')],MO),
+  def('mv_gototarget','go to %1',[DD('DEST',TARGETS)],MO),
+  def('mv_goto','go to x: %1 y: %2',[NUM('X'),NUM('Y')],MO),
+  def('mv_glidetarget','glide %1 secs to %2',[NUM('SECS'),DD('DEST',TARGETS)],MO),
+  def('mv_glide','glide %1 secs to x: %2 y: %3',[NUM('SECS'),NUM('X'),NUM('Y')],MO),
+  def('mv_dir','point in direction %1',[NUM('DIR')],MO),
+  def('mv_pointtowards','point towards %1',[DD('DEST',[['mouse-pointer','MOUSE']])],MO),
+  def('mv_chx','change x by %1',[NUM('N')],MO),
+  def('mv_setx','set x to %1',[NUM('N')],MO),
+  def('mv_chy','change y by %1',[NUM('N')],MO),
+  def('mv_sety','set y to %1',[NUM('N')],MO),
+  def('mv_bounce','if on edge, bounce',[],MO),
+  def('mv_rotstyle','set rotation style %1',[DD('STYLE',ROTATIONS)],MO),
+  def('rp_x','x position',[],MO,'r'),
+  def('rp_y','y position',[],MO,'r'),
+  def('rp_dir','direction',[],MO,'r'),
+
+  /* TAMPILAN (LOOKS) LENGKAP */
+  def('lk_say','say %1 for %2 seconds',[ANY('MSG'),NUM('SECS')],LK),
+  def('lk_sayf','say %1',[ANY('MSG')],LK),
+  def('lk_think','think %1 for %2 seconds',[ANY('MSG'),NUM('SECS')],LK),
+  def('lk_thinkf','think %1',[ANY('MSG')],LK),
+  def('lk_emoji','switch costume to %1',[DD('E',EMOJI)],LK),
+  def('lk_next_costume','next costume',[],LK),
+  def('lk_switch_backdrop','switch backdrop to %1',[DD('B',BACKDROPS)],LK),
+  def('lk_next_backdrop','next backdrop',[],LK),
+  def('lk_change_size','change size by %1',[NUM('N')],LK),
+  def('lk_size','set size to %1 %',[NUM('N')],LK),
+  def('lk_change_effect','change %1 effect by %2',[DD('EFFECT',EFFECTS),NUM('N')],LK),
+  def('lk_set_effect','set %1 effect to %2',[DD('EFFECT',EFFECTS),NUM('N')],LK),
+  def('lk_clear_effects','clear graphic effects',[],LK),
+  def('lk_show','show',[],LK),
+  def('lk_hide','hide',[],LK),
+  def('lk_goto_layer','go to %1 layer',[DD('LAYER',LAYERS)],LK),
+  def('lk_change_layer','go %1 %2 layers',[DD('DIR',LAYER_DIR),NUM('N')],LK),
+  def('rp_costume_number','costume number',[],LK,'r'),
+  def('rp_backdrop_number','backdrop number',[],LK,'r'),
+  def('rp_size','size',[],LK,'r'),
+
+  /* SUARA (SOUND) */
+  def('so_play_until_done','play sound %1 until done',[DD('SOUND',SOUNDS)],SO),
+  def('so_start','start sound %1',[DD('SOUND',SOUNDS)],SO),
+  def('so_stop_all','stop all sounds',[],SO),
+  def('so_change_effect','change %1 effect by %2',[DD('EFFECT',SOUND_EFFECTS),NUM('N')],SO),
+  def('so_set_effect','set %1 effect to %2',[DD('EFFECT',SOUND_EFFECTS),NUM('N')],SO),
+  def('so_clear_effects','clear sound effects',[],SO),
+  def('so_change_volume','change volume by %1',[NUM('N')],SO),
+  def('so_set_volume','set volume to %1 %',[NUM('N')],SO),
+  def('rp_volume','volume',[],SO,'r'),
+
+  /* KEJADIAN (EVENTS) */
+  def('ev_flag', 'when 🏁 clicked', [], EV, 'h'),
+  def('ev_key', 'when %1 key pressed', [DD('KEY', KEYS)], EV, 'h'),
+  def('ev_sprite', 'when this sprite clicked', [], EV, 'h'),
+  def('ev_backdrop', 'when backdrop switches to %1', [DD('B', BACKDROPS)], EV, 'h'),
+  def('ev_loudness', 'when %1 > %2', [DD('SENSE', [['loudness', 'LOUDNESS'], ['timer', 'TIMER']]), NUM('N')], EV, 'h'),
+  def('ev_receive', 'when I receive %1', [FLD('MSG', 'message1')], EV, 'h'),
+  def('ev_broadcast', 'broadcast %1', [FLD('MSG', 'message1')], EV),
+  def('ev_broadcast_wait', 'broadcast %1 and wait', [FLD('MSG', 'message1')], EV),
+
+  /* KONTROL (CONTROL) FULL SCRATCH BLOCKS */
+  def('ct_wait','wait %1 seconds',[NUM('N')],CT),
+  {...def('ct_repeat','repeat %1 %2',[NUM('N'),{type:'input_statement',name:'DO'}],CT)},
+  {...def('ct_forever','forever %1',[{type:'input_statement',name:'DO'}],CT,'e')},
+  {...def('ct_if','if %1 then %2',[BOOL('COND'),{type:'input_statement',name:'DO'}],CT)},
+  {...def('ct_if_else','if %1 then %2 else %3',[BOOL('COND'),{type:'input_statement',name:'DO'},{type:'input_statement',name:'ELSE'}],CT)},
+  def('ct_wait_until','wait until %1',[BOOL('COND')],CT),
+  {...def('ct_repeat_until','repeat until %1 %2',[BOOL('COND'),{type:'input_statement',name:'DO'}],CT)},
+  def('ct_stop','stop %1',[DD('OPTION',STOP_OPTIONS)],CT,'e'),
+  def('ct_start_clone','when I start as a clone',[],CT,'h'),
+  def('ct_create_clone','create clone of %1',[DD('TARGET',CLONE_TARGETS)],CT),
+  def('ct_delete_clone','delete this clone',[],CT,'e'),
+
+  /* KATEGORI LAINNYA */
+  def('pn_down','pen down',[],PN), def('pn_up','pen up',[],PN), def('pn_clear','erase all',[],PN),
+  def('pn_color','set pen color to %1',[{type:'field_colour',name:'C',colour:'#ff0000'}],PN),
+  def('pn_size','set pen size to %1',[NUM('N')],PN),
+  def('sn_key','key %1 pressed?',[DD('KEY',KEYS)],SN,'b'), def('sn_edge','touching edge?',[],SN,'b'),
+  def('vr_set','set %1 to %2',[FLD('NAME','skor'),ANY('V')],VR), def('vr_change','change %1 by %2',[FLD('NAME','skor'),NUM('V')],VR),
+  def('vr_get','%1',[FLD('NAME','skor')],VR,'r'),
+  def('cl_set','☁ simpan %1 = %2 di kelas %3',[FLD('NAME','skor'),ANY('V'),FLD('ROOM','kelas1')],CL),
+  def('cl_get','☁ ambil %1 dari kelas %2',[FLD('NAME','skor'),FLD('ROOM','kelas1')],CL,'r'),
+]);
+
+/* ================= Toolbox ================= */
+const sh = v => ({shadow:{type:'math_number', fields:{NUM:v}}});
+const tx = v => ({shadow:{type:'text', fields:{TEXT:v}}});
+const bk = (type, inputs, extra) => ({kind:'block', type, inputs, ...extra});
+const cat = (name, colour, contents) => ({kind:'category', name, colour, contents});
+
+const toolbox = {kind:'categoryToolbox', contents:[
+  cat('Gerak', MO, [
+    bk('mv_move',{STEPS:sh(10)}),
+    bk('mv_right',{DEG:sh(15)}),
+    bk('mv_left',{DEG:sh(15)}),
+    bk('mv_gototarget'),
+    bk('mv_goto',{X:sh(0),Y:sh(0)}),
+    bk('mv_glidetarget',{SECS:sh(1)}),
+    bk('mv_glide',{SECS:sh(1),X:sh(0),Y:sh(0)}),
+    bk('mv_dir',{DIR:sh(90)}),
+    bk('mv_pointtowards'),
+    bk('mv_chx',{N:sh(10)}),
+    bk('mv_setx',{N:sh(0)}),
+    bk('mv_chy',{N:sh(10)}),
+    bk('mv_sety',{N:sh(0)}),
+    bk('mv_bounce'),
+    bk('mv_rotstyle'),
+    bk('rp_x'),
+    bk('rp_y'),
+    bk('rp_dir')
+  ]),
+  cat('Tampilan', LK, [
+    bk('lk_say',{MSG:tx('Hello!'),SECS:sh(2)}),
+    bk('lk_sayf',{MSG:tx('Hello!')}),
+    bk('lk_think',{MSG:tx('Hmm...'),SECS:sh(2)}),
+    bk('lk_thinkf',{MSG:tx('Hmm...')}),
+    bk('lk_emoji'),
+    bk('lk_next_costume'),
+    bk('lk_switch_backdrop'),
+    bk('lk_next_backdrop'),
+    bk('lk_change_size',{N:sh(10)}),
+    bk('lk_size',{N:sh(100)}),
+    bk('lk_change_effect',{N:sh(25)}),
+    bk('lk_set_effect',{N:sh(0)}),
+    bk('lk_clear_effects'),
+    bk('lk_show'),
+    bk('lk_hide'),
+    bk('lk_goto_layer'),
+    bk('lk_change_layer',{N:sh(1)}),
+    bk('rp_costume_number'),
+    bk('rp_backdrop_number'),
+    bk('rp_size')
+  ]),
+  cat('Suara', SO, [
+    bk('so_play_until_done'),
+    bk('so_start'),
+    bk('so_stop_all'),
+    bk('so_change_effect',{N:sh(10)}),
+    bk('so_set_effect',{N:sh(100)}),
+    bk('so_clear_effects'),
+    bk('so_change_volume',{N:sh(-10)}),
+    bk('so_set_volume',{N:sh(100)}),
+    bk('rp_volume')
+  ]),
+  cat('Kejadian', EV, [
+    bk('ev_flag'),
+    bk('ev_key'),
+    bk('ev_sprite'),
+    bk('ev_backdrop'),
+    bk('ev_loudness', {N: sh(10)}),
+    bk('ev_receive'),
+    bk('ev_broadcast'),
+    bk('ev_broadcast_wait')
+  ]),
+  cat('Pena', PN, [bk('pn_down'),bk('pn_up'),bk('pn_clear'),bk('pn_color'),bk('pn_size',{N:sh(2)})]),
+  cat('Kontrol', CT, [
+    bk('ct_wait',{N:sh(1)}),
+    bk('ct_repeat',{N:sh(10)}),
+    bk('ct_forever'),
+    bk('ct_if'),
+    bk('ct_if_else'),
+    bk('ct_wait_until'),
+    bk('ct_repeat_until'),
+    bk('ct_stop'),
+    bk('ct_start_clone'),
+    bk('ct_create_clone'),
+    bk('ct_delete_clone')
+  ]),
+  cat('Sensor', SN, [bk('sn_key'),bk('sn_edge')]),
+  cat('Operator', '#59c059', [bk('math_number'),bk('math_arithmetic',{A:sh(1),B:sh(1)}),bk('math_random_int',{FROM:sh(1),TO:sh(10)}),bk('logic_compare',{A:sh(0),B:sh(0)}),bk('logic_operation'),bk('logic_negate'),bk('logic_boolean'),bk('text'),bk('text_join')]),
+  cat('Variabel', VR, [bk('vr_set',{V:sh(0)}),bk('vr_change',{V:sh(1)}),bk('vr_get')]),
+  cat('Cloud', CL, [bk('cl_set',{V:sh(0)}),bk('cl_get')]),
+]};
+
+/* ================= Generator kode ================= */
+const G = Blockly.JavaScript; let uid = 0;
+const v = (b, n, d = '0') => G.valueToCode(b, n, 99) || d;
+const gs = (t, f) => G.forBlock[t] = b => f(b) + '\n';
+const gv = (t, f) => G.forBlock[t] = b => [f(b), 0];
+const fl = (b, n) => JSON.stringify(b.getFieldValue(n));
+
+gs('mv_move', b => `S.move(${v(b,'STEPS')});`); 
+gs('mv_right', b => `S.turn(${v(b,'DEG')});`);
+gs('mv_left', b => `S.turn(-(${v(b,'DEG')}));`); 
+gs('mv_gototarget', b => `S.goToTarget(${fl(b,'DEST')});`);
+gs('mv_goto', b => `S.goto(${v(b,'X')},${v(b,'Y')});`);
+gs('mv_glidetarget', b => `await S.glideTarget(${v(b,'SECS')}, ${fl(b,'DEST')});`);
+gs('mv_glide', b => `await S.glide(${v(b,'SECS')}, ${v(b,'X')}, ${v(b,'Y')});`);
+gs('mv_dir', b => `S.dir=${v(b,'DIR')};`);
+gs('mv_pointtowards', b => `S.pointTowards(${fl(b,'DEST')});`);
+gs('mv_chx', b => `S.goto(S.x+(${v(b,'N')}),S.y);`);
+gs('mv_setx', b => `S.goto(${v(b,'N')},S.y);`);
+gs('mv_chy', b => `S.goto(S.x,S.y+(${v(b,'N')}));`);
+gs('mv_sety', b => `S.goto(S.x,${v(b,'N')});`);
+gs('mv_bounce', () => `S.bounce();`);
+gs('mv_rotstyle', b => `S.rotationStyle=${fl(b,'STYLE')};`);
+
+gv('rp_x', () => 'S.x'); 
+gv('rp_y', () => 'S.y');
+gv('rp_dir', () => 'S.dir');
+
+/* Generator Tampilan (Looks) */
+gs('lk_say', b => `await S.sayFor(${v(b,'MSG',"''")},${v(b,'SECS')}, 'say');`);
+gs('lk_sayf', b => `S.setSay(${v(b,'MSG',"''")}, 'say');`);
+gs('lk_think', b => `await S.sayFor(${v(b,'MSG',"''")},${v(b,'SECS')}, 'think');`);
+gs('lk_thinkf', b => `S.setSay(${v(b,'MSG',"''")}, 'think');`);
+gs('lk_emoji', b => `S.emoji=${fl(b,'E')};`);
+gs('lk_next_costume', () => `S.nextCostume();`);
+gs('lk_switch_backdrop', b => `S.backdrop=${fl(b,'B')};`);
+gs('lk_next_backdrop', () => `S.nextBackdrop();`);
+gs('lk_change_size', b => `S.size += (${v(b,'N')});`);
+gs('lk_size', b => `S.size=${v(b,'N')};`);
+gs('lk_change_effect', b => `S.changeEffect(${fl(b,'EFFECT')}, ${v(b,'N')});`);
+gs('lk_set_effect', b => `S.setEffect(${fl(b,'EFFECT')}, ${v(b,'N')});`);
+gs('lk_clear_effects', () => `S.clearEffects();`);
+gs('lk_show', () => 'S.show=true;');
+gs('lk_hide', () => 'S.show=false;');
+gs('lk_goto_layer', b => `S.gotoLayer(${fl(b,'LAYER')});`);
+gs('lk_change_layer', b => `S.changeLayer(${fl(b,'DIR')}, ${v(b,'N')});`);
+
+gv('rp_costume_number', () => 'S.getCostumeNumber()');
+gv('rp_backdrop_number', () => 'S.getBackdropNumber()');
+gv('rp_size', () => 'S.size');
+
+/* Generator Suara (Sound) */
+gs('so_play_until_done', b => `await S.playSound(${fl(b,'SOUND')}, true);`);
+gs('so_start', b => `S.playSound(${fl(b,'SOUND')}, false);`);
+gs('so_stop_all', () => 'S.stopAllSounds();');
+gs('so_change_effect', b => `S.changeSoundEffect(${fl(b,'EFFECT')}, ${v(b,'N')});`);
+gs('so_set_effect', b => `S.setSoundEffect(${fl(b,'EFFECT')}, ${v(b,'N')});`);
+gs('so_clear_effects', () => `S.clearSoundEffects();`);
+gs('so_change_volume', b => `S.changeVolume(${v(b,'N')});`);
+gs('so_set_volume', b => `S.setVolume(${v(b,'N')});`);
+gv('rp_volume', () => 'S.volume');
+
+/* Generator Kejadian (Events) */
+G.forBlock.ev_flag = () => '';
+G.forBlock.ev_key = () => '';
+G.forBlock.ev_sprite = () => '';
+G.forBlock.ev_backdrop = () => '';
+G.forBlock.ev_loudness = () => '';
+G.forBlock.ev_receive = () => '';
+gs('ev_broadcast', b => `/* broadcast ${fl(b, 'MSG')} */`);
+gs('ev_broadcast_wait', b => `/* broadcast ${fl(b, 'MSG')} and wait */`);
+
+gs('pn_down', () => 'S.pen.down=true;'); gs('pn_up', () => 'S.pen.down=false;'); gs('pn_clear', () => 'S.clearPen();');
+gs('pn_color', b => `S.pen.color=${fl(b,'C')};`); gs('pn_size', b => `S.pen.size=${v(b,'N')};`);
+
+/* Generator Kontrol (Control) */
+gs('ct_wait', b => `await S.wait(${v(b,'N')});`); 
+gs('ct_stop', b => {
+  const opt = b.getFieldValue('OPTION');
+  if (opt === 'ALL') return 'S.stopped=true;throw "stop";';
+  if (opt === 'THIS_SCRIPT') return 'throw "stop";';
+  return '';
+});
+G.forBlock.ct_repeat = b => { const i = 'i' + (++uid); return `for(let ${i}=0;${i}<Number(${v(b,'N')});${i}++){\n${G.statementToCode(b,'DO')}await S.tick();}\n`; };
+G.forBlock.ct_forever = b => `while(true){\n${G.statementToCode(b,'DO')}await S.tick();}\n`;
+G.forBlock.ct_if = b => `if(${v(b,'COND','false')}){\n${G.statementToCode(b,'DO')}}\n`;
+G.forBlock.ct_if_else = b => `if(${v(b,'COND','false')}){\n${G.statementToCode(b,'DO')}}else{\n${G.statementToCode(b,'ELSE')}}\n`;
+G.forBlock.ct_wait_until = b => `while(!(${v(b,'COND','false')})){\nawait S.tick();}\n`;
+G.forBlock.ct_repeat_until = b => `while(!(${v(b,'COND','false')})){\n${G.statementToCode(b,'DO')}await S.tick();}\n`;
+G.forBlock.ct_start_clone = () => '';
+gs('ct_create_clone', () => '/* clone placeholder */');
+gs('ct_delete_clone', () => 'throw "stop";');
+
+gv('sn_key', b => `S.keys.has(${fl(b,'KEY')})`); gv('sn_edge', () => 'S.edge()');
+gs('vr_set', b => `S.vars[${fl(b,'NAME')}]=${v(b,'V')};`);
+gs('vr_change', b => `S.vars[${fl(b,'NAME')}]=(Number(S.vars[${fl(b,'NAME')}])||0)+(${v(b,'V')});`);
+gv('vr_get', b => `(S.vars[${fl(b,'NAME')}]??0)`);
+gs('cl_set', b => `await S.cloudSet(${fl(b,'NAME')},${v(b,'V')},${fl(b,'ROOM')});`);
+gv('cl_get', b => `(await S.cloudGet(${fl(b,'NAME')},${fl(b,'ROOM')}))`);
+
+/* ================= Mesin eksekusi & panggung ================= */
+const stage = $('stage');
+const ctx = stage.getContext('2d'), penC = document.createElement('canvas'); penC.width = 480; penC.height = 360;
+const pc = penC.getContext('2d'), enc = encodeURIComponent;
+
+/* WEB AUDIO SYNTHESIZER UNTUK FITUR SUARA */
+let audioCtx = null;
+const activeNodes = new Set();
+
+function getAudioContext() {
+  if (!audioCtx) {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  }
+  if (audioCtx.state === 'suspended') {
+    audioCtx.resume();
+  }
+  return audioCtx;
+}
+
+let mouseX = 0, mouseY = 0;
+stage.addEventListener('mousemove', e => {
+  const rect = stage.getBoundingClientRect();
+  mouseX = (e.clientX - rect.left) * (480 / rect.width) - 240;
+  mouseY = 180 - (e.clientY - rect.top) * (360 / rect.height);
+});
+
+const S = {
+  keys: new Set(), stopped: false, rotationStyle: 'ALL', backdrop: 'backdrop1',
+  effects: {color: 0, fisheye: 0, whirl: 0, pixelate: 0, mosaic: 0, brightness: 0, ghost: 0},
+  soundEffects: {pitch: 100, pan: 0}, volume: 100,
+  layer: 1,
+  reset() { 
+    Object.assign(this, {
+      x:0, y:0, dir:90, size:100, show:true, say:null, sayType:'say', vars:{},
+      emoji:this.emoji||'🐱', pen:{down:false,color:'#000000',size:2}, rotationStyle:'ALL',
+      backdrop: 'backdrop1', layer: 1, soundEffects: {pitch: 100, pan: 0}, volume: 100
+    }); 
+    this.clearEffects();
+    this.clearPen(); 
+  },
+  clearPen() { pc.clearRect(0, 0, 480, 360); },
+  goto(x, y) {
+    x = +x || 0; y = +y || 0;
+    if (this.pen.down) { pc.strokeStyle = this.pen.color; pc.lineWidth = +this.pen.size || 1; pc.lineCap = 'round'; pc.beginPath(); pc.moveTo(240+this.x, 180-this.y); pc.lineTo(240+x, 180-y); pc.stroke(); }
+    this.x = x; this.y = y;
+  },
+  goToTarget(t) {
+    if (t === 'RANDOM') {
+      this.goto((Math.random() - 0.5) * 400, (Math.random() - 0.5) * 300);
+    } else if (t === 'MOUSE') {
+      this.goto(mouseX, mouseY);
+    }
+  },
+  async glide(secs, targetX, targetY) {
+    secs = +secs || 0;
+    if (secs <= 0) { this.goto(targetX, targetY); return; }
+    const startX = this.x, startY = this.y;
+    const startTime = performance.now();
+    const duration = secs * 1000;
+    
+    while (performance.now() - startTime < duration) {
+      const progress = (performance.now() - startTime) / duration;
+      this.goto(startX + (targetX - startX) * progress, startY + (targetY - startY) * progress);
+      await this.tick();
+    }
+    this.goto(targetX, targetY);
+  },
+  async glideTarget(secs, target) {
+    let tx = this.x, ty = this.y;
+    if (target === 'RANDOM') {
+      tx = (Math.random() - 0.5) * 400;
+      ty = (Math.random() - 0.5) * 300;
+    } else if (target === 'MOUSE') {
+      tx = mouseX; ty = mouseY;
+    }
+    await this.glide(secs, tx, ty);
+  },
+  pointTowards(t) {
+    if (t === 'MOUSE') {
+      const dx = mouseX - this.x;
+      const dy = mouseY - this.y;
+      let angle = Math.atan2(dy, dx) * 180 / Math.PI;
+      this.dir = (90 - angle + 360) % 360;
+    }
+  },
+  move(n) { const r = (this.dir - 90) * Math.PI / 180; this.goto(this.x + (+n||0) * Math.cos(r), this.y - (+n||0) * Math.sin(r)); },
+  turn(d) { this.dir = (((this.dir + (+d||0)) % 360) + 360) % 360; },
+  edge() { const h = 24 * this.size / 100; return Math.abs(this.x) + h >= 240 || Math.abs(this.y) + h >= 180; },
+  bounce() {
+    const h = 24 * this.size / 100;
+    if (Math.abs(this.x) + h >= 240) {
+      this.dir = (360 - this.dir) % 360;
+      this.x = this.x > 0 ? 240 - h : -240 + h;
+    }
+    if (Math.abs(this.y) + h >= 180) {
+      this.dir = (180 - this.dir + 360) % 360;
+      this.y = this.y > 0 ? 180 - h : -180 + h;
+    }
+  },
+  nextCostume() {
+    const list = EMOJI.map(e => e[0]);
+    let idx = list.indexOf(this.emoji);
+    idx = (idx + 1) % list.length;
+    this.emoji = list[idx];
+  },
+  nextBackdrop() {
+    const list = BACKDROPS.map(b => b[0]);
+    let idx = list.indexOf(this.backdrop);
+    idx = (idx + 1) % list.length;
+    this.backdrop = list[idx];
+  },
+  changeEffect(effect, val) { if (this.effects.hasOwnProperty(effect)) this.effects[effect] += (+val||0); },
+  setEffect(effect, val) { if (this.effects.hasOwnProperty(effect)) this.effects[effect] = (+val||0); },
+  clearEffects() { Object.keys(this.effects).forEach(k => this.effects[k] = 0); },
+  gotoLayer(l) { this.layer = l === 'front' ? 10 : 1; },
+  changeLayer(dir, n) { this.layer += (dir === 'forward' ? 1 : -1) * (+n||0); },
+  getCostumeNumber() { return EMOJI.findIndex(e => e[0] === this.emoji) + 1; },
+  getBackdropNumber() { return BACKDROPS.findIndex(b => b[0] === this.backdrop) + 1; },
+  setSay(m, type = 'say') { this.say = String(m); this.sayType = type; },
+  async sayFor(m, s, type = 'say') { this.setSay(m, type); await this.wait(s); this.say = null; },
+
+  /* METODE IMPLEMENTASI SUARA */
+  playSound(name, waitUntilDone = false) {
+    const ac = getAudioContext();
+    const duration = 0.45;
+    const now = ac.currentTime;
+
+    const osc = ac.createOscillator();
+    const gain = ac.createGain();
+
+    osc.type = 'sawtooth';
+    const pitchMultiplier = Math.max(0.1, this.soundEffects.pitch / 100);
+    const startFreq = 400 * pitchMultiplier;
+    const midFreq = 750 * pitchMultiplier;
+    const endFreq = 250 * pitchMultiplier;
+
+    osc.frequency.setValueAtTime(startFreq, now);
+    osc.frequency.exponentialRampToValueAtTime(midFreq, now + duration * 0.4);
+    osc.frequency.exponentialRampToValueAtTime(endFreq, now + duration);
+
+    const vol = Math.max(0, Math.min(1, this.volume / 100));
+    gain.gain.setValueAtTime(0, now);
+    gain.gain.linearRampToValueAtTime(vol * 0.3, now + 0.05);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + duration);
+
+    osc.connect(gain);
+    gain.connect(ac.destination);
+
+    osc.start(now);
+    osc.stop(now + duration);
+
+    activeNodes.add(osc);
+    osc.onended = () => activeNodes.delete(osc);
+
+    if (waitUntilDone) {
+      return this.wait(duration);
+    }
+  },
+  stopAllSounds() {
+    activeNodes.forEach(node => {
+      try { node.stop(); } catch(e){}
+    });
+    activeNodes.clear();
+  },
+  changeSoundEffect(effect, val) {
+    if (this.soundEffects.hasOwnProperty(effect)) {
+      this.soundEffects[effect] += (+val || 0);
+    }
+  },
+  setSoundEffect(effect, val) {
+    if (this.soundEffects.hasOwnProperty(effect)) {
+      this.soundEffects[effect] = (+val || 0);
+    }
+  },
+  clearSoundEffects() {
+    this.soundEffects = {pitch: 100, pan: 0};
+  },
+  changeVolume(val) {
+    this.volume = Math.max(0, Math.min(100, this.volume + (+val || 0)));
+  },
+  setVolume(val) {
+    this.volume = Math.max(0, Math.min(100, +val || 0));
+  },
+
+  tick() {
+    if (this.stopped) throw 'stop';
+    return new Promise(r => $('turbo').checked ? setTimeout(r, 0) : requestAnimationFrame(r)).then(() => { if (S.stopped) throw 'stop'; });
+  },
+  async wait(s) { const t = performance.now() + (+s||0) * 1000; do { await this.tick(); } while (performance.now() < t); },
+  async cloudSet(n, val, room) {
+    const r = await fetch(`/api/cloud/${enc(room)}/${enc(n)}`, {method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify({value:String(val)})});
+    if (!r.ok) throw 'Cloud: nama/kelas hanya huruf, angka, - dan _'; await this.tick();
+  },
+  async cloudGet(n, room) {
+    const r = await fetch(`/api/cloud/${enc(room)}/${enc(n)}`); if (!r.ok) throw 'Cloud: nama/kelas tidak valid';
+    const x = (await r.json()).value; await this.tick(); return x !== '' && !isNaN(x) ? Number(x) : x;
+  },
+};
+S.reset();
+
+function draw() {
+  ctx.clearRect(0, 0, 480, 360); 
+  ctx.drawImage(penC, 0, 0);
+  
+  if (S.show) {
+    ctx.save(); 
+    ctx.translate(240 + S.x, 180 - S.y);
+    
+    // Rotasi berdasarkan Style
+    if (S.rotationStyle === 'ALL') {
+      ctx.rotate((S.dir - 90) * Math.PI / 180);
+    } else if (S.rotationStyle === 'LEFT_RIGHT') {
+      if (S.dir > 180) ctx.scale(-1, 1);
+    }
+    
+    // Efek Transparansi (Ghost) & Warna (Hue)
+    ctx.globalAlpha = Math.max(0, Math.min(1, 1 - (S.effects.ghost / 100)));
+    if (S.effects.color !== 0) {
+      ctx.filter = `hue-rotate(${S.effects.color * 3.6}deg)`;
+    }
+    
+    ctx.font = `${48 * S.size / 100}px serif`; 
+    ctx.textAlign = 'center'; 
+    ctx.textBaseline = 'middle'; 
+    ctx.fillText(S.emoji, 0, 0); 
+    ctx.restore();
+    
+    // Bubble Balon Kata / Berpikir (Say / Think)
+    if (S.say != null) {
+      ctx.save();
+      ctx.font = '14px system-ui'; 
+      const w = ctx.measureText(S.say).width + 20;
+      const bx = 240 + S.x - w / 2;
+      const by = 180 - S.y - 40 * S.size / 100 - 34;
+      
+      ctx.fillStyle = '#fff'; 
+      ctx.strokeStyle = '#999'; 
+      ctx.lineWidth = 1.5;
+      
+      if (S.sayType === 'think') {
+        // Balon Bepikir
+        ctx.beginPath();
+        ctx.roundRect(bx, by, w, 28, 14);
+        ctx.fill(); ctx.stroke();
+        
+        ctx.beginPath();
+        ctx.arc(240 + S.x - 6, 180 - S.y - 40 * S.size / 100 - 4, 4, 0, Math.PI * 2);
+        ctx.fill(); ctx.stroke();
+        
+        ctx.beginPath();
+        ctx.arc(240 + S.x - 12, 180 - S.y - 40 * S.size / 100 + 4, 2, 0, Math.PI * 2);
+        ctx.fill(); ctx.stroke();
+      } else {
+        // Balon Bicara
+        ctx.beginPath(); 
+        ctx.roundRect(bx, by, w, 28, 12); 
+        ctx.fill(); ctx.stroke();
+      }
+      
+      ctx.fillStyle = '#222'; 
+      ctx.textAlign = 'center'; 
+      ctx.fillText(S.say, bx + w / 2, by + 18);
+      ctx.restore();
+    }
+  }
+  
+  $('info').textContent = `X:${Math.round(S.x)} Y:${Math.round(S.y)} °:${Math.round(S.dir)}`;
+  requestAnimationFrame(draw);
+}
+
+const AF = Object.getPrototypeOf(async function () {}).constructor; let active = 0;
+async function exec(hat) {
+  if (!active) S.stopped = false; active++;
+  try { G.init(ws); const code = G.finish(G.blockToCode(hat.getNextBlock())); await new AF('S', code)(S); }
+  catch (e) { if (e !== 'stop') { $('msg').textContent = 'Error: ' + e; console.error(e); } }
+  finally { active--; }
+}
+async function flag() {
+  S.stopped = true; S.stopAllSounds(); for (let n = 0; active && n < 50; n++) await new Promise(r => setTimeout(r, 10));
+  $('msg').textContent = ''; S.reset(); ws.getBlocksByType('ev_flag').forEach(exec);
+}
+function stopAll() { S.stopped = true; S.stopAllSounds(); }
+window.addEventListener('keydown', e => {
+  if (/INPUT|TEXTAREA/.test(e.target.tagName) || e.target.closest('.blocklyWidgetDiv')) return;
+  S.keys.add(e.key); if (e.key.startsWith('Arrow') || e.key === ' ') e.preventDefault();
+  ws.getBlocksByType('ev_key').filter(b => b.getFieldValue('KEY') === e.key).forEach(exec);
+});
+window.addEventListener('keyup', e => S.keys.delete(e.key));
+
+/* ================= Workspace Tema Gelap ================= */
+const ws = Blockly.inject('blocklyDiv', {
+  toolbox,
+  grid:{spacing:25,length:3,colour:'#1e293b',snap:true},
+  zoom:{controls:true,wheel:true,startScale:.9},
+  trashcan:true,
+  media:'https://unpkg.com/blockly@10.4.3/media/',
+  theme: Blockly.Theme.defineTheme('darkTheme', {
+    base: Blockly.Themes.Classic,
+    componentStyles: {
+      workspaceBackgroundColour: '#0d1117',
+      toolboxBackgroundColour: '#121826',
+      flyoutBackgroundColour: '#161c2e',
+      scrollbarColour: '#21262d',
+      scrollbarOpacity: 0.6
+    }
+  })
+});
+window.addEventListener('resize', () => Blockly.svgResize(ws));
+const starter = {blocks:{languageVersion:0, blocks:[{type:'ev_flag',x:40,y:40,next:{block:{type:'ct_repeat',inputs:{N:{shadow:{type:'math_number',fields:{NUM:4}}},DO:{block:{type:'mv_move',inputs:{STEPS:{shadow:{type:'math_number',fields:{NUM:60}}}},next:{block:{type:'mv_right',inputs:{DEG:{shadow:{type:'math_number',fields:{NUM:90}}}}}}}}}}}}]}};
+Blockly.serialization.workspaces.load(starter, ws);
+
+/* ================= Backend: simpan, buka, bagikan ================= */
+const token = () => localStorage.getItem('token');
+const status = t => { $('status').textContent = t; setTimeout(() =>$('status').textContent = '', 2500); };
+async function api(path, opts = {}) {
+  const r = await fetch('/api' + path, {...opts, headers:{'Content-Type':'application/json', ...(token() ? {Authorization:'Bearer ' + token()} : {})}});
+  if (r.status === 204) return null; const j = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(r.status === 401 ? 'Masuk dulu di halaman utama (/)' : j.error || 'Gagal'); return j;
+}
+let curId = null;
+const pack = () => ({format:'mini-scratch@1', workspace:Blockly.serialization.workspaces.save(ws), sprite:{emoji:S.emoji}});
+function unpack(d) {
+  if (d?.format !== 'mini-scratch@1') throw new Error('Format project tidak dikenali');
+  Blockly.serialization.workspaces.load(d.workspace, ws); S.emoji = d.sprite?.emoji || '🐱'; S.reset();
+}
+async function save() {
+  try {
+    const body = JSON.stringify({title:$('title').value.trim() || 'Tanpa judul', data:pack()});
+    if (curId) await api('/projects/' + curId, {method:'PUT', body});
+    else { curId = (await api('/projects', {method:'POST', body})).id; history.replaceState(null, '', '?id=' + curId); }
+    status('✓ Tersimpan');
+  } catch (e) { alert(e.message); }
+}
+async function share() {
+  try {
+    if (!curId) await save(); if (!curId) return;
+    await api('/projects/' + curId, {method:'PUT', body:JSON.stringify({shared:true})});
+    const link = `${location.origin}/editor/?share=${curId}`;
+    try { await navigator.clipboard.writeText(link); status('Link disalin'); } catch { prompt('Salin link ini:', link); }
+  } catch (e) { alert(e.message); }
+}
+async function openDlg() {
+  try {
+    const list = await api('/projects');
+    $('plist').innerHTML = list.length ? list.map(p => `<div class="it" data-id="${p.id}"><b></b><span style="color:#889">${new Date(p.updatedAt).toLocaleDateString('id-ID')}</span></div>`).join('') : 'Belum ada project.';
+    $('plist').querySelectorAll('.it').forEach((el, i) => { el.firstChild.textContent = list[i].title; el.onclick = () => { loadProj(el.dataset.id); dlg.close(); }; });
+    dlg.showModal();
+  } catch (e) { alert(e.message); }
+}
+async function loadProj(id, shared) {
+  try {
+    const p = await api(shared ? '/share/' + id : '/projects/' + id);
+    unpack(p.data); $('title').value = p.title; curId = shared ? null : p.id;
+    history.replaceState(null, '', shared ? '?share=' + id : '?id=' + id);
+  } catch (e) { alert(e.message); }
+}
+function newProj() { if (!confirm('Mulai project baru? Perubahan yang belum disimpan hilang.')) return; ws.clear(); S.emoji = '🐱'; S.reset(); curId = null; $('title').value = 'Project tanpa judul'; history.replaceState(null, '', location.pathname); }
+function download() {
+  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify(pack())], {type:'application/json'}));
+  a.download = ($('title').value || 'project') + '.json'; a.click();
+}
+const q = new URLSearchParams(location.search);
+if (q.get('share')) loadProj(q.get('share'), true); else if (q.get('id')) loadProj(q.get('id'));
+requestAnimationFrame(draw);
+</script>
+</body>
+</html>

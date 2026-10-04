@@ -1,0 +1,25 @@
+{
+  "nextId": 2,
+  "users": [
+    {
+      "id": 1,
+      "username": "kamil",
+      "passwordHash": "$2a$10$12Lz1GAoHQDH/7t.SuhUPutqNkwdAkQiYs0uxb8A00Zpi/uHp0roe",
+      "createdAt": "2026-10-04T10:31:56.236Z"
+    }
+  ],
+  "projects": [],
+  "progress": [
+    {
+      "userId": 1,
+      "lessonId": 1,
+      "completedAt": "2026-10-04T10:45:11.445Z"
+    },
+    {
+      "userId": 1,
+      "lessonId": 2,
+      "completedAt": "2026-10-04T10:49:08.400Z"
+    }
+  ],
+  "cloud": {}
+}
